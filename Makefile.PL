@@ -3,6 +3,7 @@ use inc::Module::Install;
 name 'Data-Path';
 perl_version '5.006';
 
+abstract_from 'lib/Data/Path.pod';
 all_from 'lib/Data/Path.pm';
 
 requires 'Carp'         => '0';
