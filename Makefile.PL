@@ -9,6 +9,7 @@ requires            'Carp'              => '0';
 requires            'Scalar::Util'      => '0';
 
 build_requires      'Test::More'        => '0.7';
+build_requires      'Test::Exception'   => '0';
 build_requires      'Test::MockObject'  => '1.08';
 
 WriteAll;

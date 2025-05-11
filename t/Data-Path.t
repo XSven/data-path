@@ -1,4 +1,5 @@
-use Test::More tests => 18;
+use Test::More tests => 20;
+use Test::Exception;
 use Test::MockObject;
 
 BEGIN {
@@ -99,4 +100,9 @@ my $deep_method = { foo => $obj};
 
 $b = Data::Path->new($deep_method);
 is($b->get('/foo/method2()'), $obj->method2(), "deep method returned");
+
+throws_ok { Data::Path->new( { foo => 1 } )->get('goo') }
+    qr/malformed path expression/, 'malformed path expression throws an error'; 
+throws_ok { Data::Path->new( { foo => [1,2] } )->get('/foo[]') }
+    qr/malformed array index request/, 'malformed array path expression throws an error'; 
 
