@@ -4,7 +4,11 @@ name 'Data-Path';
 perl_version '5.006';
 
 abstract_from 'lib/Data/Path.pod';
-all_from 'lib/Data/Path.pm';
+author_from 'lib/Data/Path.pod';
+license_from 'lib/Data/Path.pod';
+
+version_from 'lib/Data/Path.pm';
+perl_version_from 'lib/Data/Path.pm';
 
 requires 'Carp'         => '0';
 requires 'Scalar::Util' => '0';
