@@ -16,6 +16,6 @@ local/
 nytprof.out
 pod2htm*.tmp
 pm_to_blib
-Local-New-Module-*
-Local-New-Module-*.tar.gz
+Data-Path-*
+Data-Path-*.tar.gz
 tags
