@@ -21,14 +21,14 @@ sub new {
       key_does_not_exist => $callback->{ key_does_not_exist }
         || sub {
         my ( $data, $key, $index, $value, $rest ) = @_;
-        croak "key $key does not exists\n";
+        croak "key $key does not exist\n";
         }
 
       ,
       index_does_not_exist => $callback->{ index_does_not_exist }
         || sub {
         my ( $data, $key, $index, $value, $rest ) = @_;
-        croak "key $key\[$index\] does not exists\n";
+        croak "key $key\[$index\] does not exist\n";
         }
 
       ,

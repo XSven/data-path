@@ -14,7 +14,7 @@ requires 'Carp'         => '0';
 requires 'Scalar::Util' => '0';
 
 test_requires 'Test::More'       => '0.7';
-test_requires 'Test::Exception'  => '0';
+test_requires 'Test::Fatal'      => '0';
 test_requires 'Test::MockObject' => '1.08';
 
 WriteAll;

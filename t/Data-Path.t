@@ -1,90 +1,83 @@
 use strict;
 use warnings;
 
-use Test::More tests => 20;
-use Test::Exception;
+use Test::More import => [ qw( BAIL_OUT is like new_ok ok use_ok ) ], tests => 15;
+use Test::Fatal      qw( exception );
 use Test::MockObject ();
 
+my $class;
+
 BEGIN {
-  use_ok( 'Data::Path' )
+  $class = 'Data::Path';
+  use_ok $class or BAIL_OUT "Cannot load class '$class'!";
 }
 
-my $hash = {
+my $data = {
   scalar => 'scalar_value',
   array  => [ qw( array_value0 array_value1 array_value2 array_value3) ],
   hash   => {
-    hash1 => 'hash_value1',
-    hash2 => 'hash_value2'
+    hash1 => 'hash1_value',
+    hash2 => 'hash2_value'
   },
   complex => { level2 => [ { level3_0 => [ 'level4_0', { level4_1 => { level5 => 'huhu' } }, 'level4_2' ] } ] },
   method  => sub { return 'sub val'; }
 
 };
 
-my $a = Data::Path->new( $hash );
+my $self = new_ok( $class, [ $data ] );
 
-ok( $a );
+is $self->get( '/scalar' ), 'scalar_value', 'hash key, scalar value';
 
-my $v = '';
+is $self->get( '/array[0]' ), 'array_value0', 'hash key, array index, scalar value';
 
-$v = $a->get( '/scalar' );
-ok( $v eq 'scalar_value', " value=$v" );
+is $self->get( '/hash/hash1' ), 'hash1_value', 'hash key, hash key, scalar value';
 
-$v = $a->get( '/array[0]' );
-ok( $v eq 'array_value0', " value=$v" );
+is $self->get( '/complex/level2[0]/level3_0[0]' ), 'level4_0',
+  'hash key, hash key, array index, hash key, array index, scalar value';
 
-$v = $a->get( '/hash/hash1' );
-ok( $v eq 'hash_value1', " value=$v" );
+is $self->get( '/complex/level2[0]/level3_0[2]' ), 'level4_2',
+  'hash key, hash key, array index, hash key, array index, scalar value';
 
-$v = $a->get( '/complex/level2[0]/level3_0[0]' );
-ok( $v eq 'level4_0', " value=$v" );
+is $self->get( '/complex/level2[0]/level3_0[1]/level4_1/level5' ), 'huhu',
+  'hash key, hash key, array index, hash key, array index, hash key, hash key, scalar value';
 
-$v = $a->get( '/complex/level2[0]/level3_0[2]' );
-ok( $v eq 'level4_2', " value=$v" );
+like exception { $self->get( '/complex/level2[99]/level3_0[1]/level4_1/level5' ) },
+  qr/key level2\[99\] does not exist/, 'index does not exist';
 
-$v = $a->get( '/complex/level2[0]/level3_0[1]/level4_1/level5' );
-ok( $v eq 'huhu', " value=$v" );
+like exception { $self->get( '/complex/level2[0]/level3_1[1]/level4_1/level5' ) }, qr/key level3_1 does not exist/,
+  'key does not exist';
 
-eval { $a->get( '/complex/level2[99]/level3_0[1]/level4_1/level5' ); };
-ok( $@ =~ /does not exists/, " check error_msg = $@" );
+is $self->get( '/complex/level2[0]/level3_0[1]/level4_1/level5_not_exists' ), undef, 'trailing hash key does not exist';
 
-eval { $a->get( '/complex/level2[0]/level3_1[1]/level4_1/level5' ); };
-ok( $@ =~ /does not exists/, " check error_msg = $@" );
+is $self->get( '/complex/level2[0]/level3_0[99]' ), undef, 'trailing array index does not exist';
 
-$v = $a->get( '/complex/level2[0]/level3_0[1]/level4_1/level5_not_exists' ) || 'UNDEF';
-ok( $v eq 'UNDEF', " value=$v" );
-
-$v = $a->get( '/complex/level2[0]/level3_0[99]' ) || 'UNDEF';
-ok( $v eq 'UNDEF', " value=$v" );
-
-$v = $a->get( '/complex/level2[0]/level3_0[2]' ) || 'UNDEF';
-ok( $v eq 'level4_2', " value=$v" );
-
-my $b = Data::Path->new(
-  $hash,
+$self = new_ok $class => [
+  $data,
   {
     'key_does_not_exist'   => sub { die 'callback_error_key' },
     'index_does_not_exist' => sub { die 'callback_error_index' }
   }
-);
-eval { $b->get( '/complex/home/' ); };
-ok( $@ =~ /callback_error_key/, " check error_msg = $@" );
+];
 
-eval { $b->get( '/complex/level2[99]/level3_0' ); };
-ok( $@ =~ /callback_error_index/, " check error_msg = $@" );
+like exception { $self->get( '/complex/home/' ) }, qr/callback_error_key/, 'use key does not exist callback';
+
+like exception { $self->get( '/complex/level2[99]/level3_0' ) }, qr/callback_error_index/,
+  'use index does not exist callback';
+
+__END__
 my $obj = Test::MockObject->new( {} );
 
 $obj->mock( 'method2' => sub { 'method2 val' } );
-my $b2 = Data::Path->new( $obj );
-is( $b->get( '/method()' ),         $hash->{ method }->(), "subroutine returned" );
+my $b2 = new_ok $class => [ $obj ];
+is( $b->get( '/method()' ),         $data->{ method }->(), "subroutine returned" );
 is( $b2->get( '/method2()', $obj ), $obj->method2(),       "method returned" );
 
 my $deep_method = { foo => $obj };
 
-$b = Data::Path->new( $deep_method );
+$b = new_ok $class => [ $deep_method ];
 is( $b->get( '/foo/method2()' ), $obj->method2(), "deep method returned" );
 
-throws_ok { Data::Path->new( { foo => 1 } )->get( 'goo' ) }
+throws_ok { $class->new( { foo => 1 } )->get( 'goo' ) }
 qr/malformed path expression/, 'malformed path expression throws an error';
-throws_ok { Data::Path->new( { foo => [ 1, 2 ] } )->get( '/foo[]' ) }
+throws_ok { $class->new( { foo => [ 1, 2 ] } )->get( '/foo[]' ) }
 qr/malformed array index request/, 'malformed array path expression throws an error';
