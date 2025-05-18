@@ -6,9 +6,9 @@ Data::Path - Perl extension for XPath like accessing from complex data structs
 
 =head1 SYNOPSIS
 
-  use Data::Path;
+  use Data::Path ();
 
-  my $hashdata= {
+  my $hashdata = {
     result => {
       msg => [
         { text => 'msg0' },
@@ -66,7 +66,7 @@ The default callbacks but you can overwrite them.
 
 =head2 EXMAPLE overwrite callback
 
-  my $hpath=Data::Path->new(
+  my $hpath = Data::Path->new(
     $hashdata,
     {
       key_does_not_exist => sub { die "key not found\n" },
@@ -74,21 +74,26 @@ The default callbacks but you can overwrite them.
     }
   );
 
-=head2 EXPORT
-
-None by default.
-
 =head1 SEE ALSO
 
-  XPath
+=over
+
+=item * L<Data::DPath>
+
+=item * L<Data::Nested>
+
+=item * L<Data::PathSimple>
+
+=item * L<Data::SPath>
+
+=item * L<Data::SimplePath>
+
+=back
 
 =head1 TODO
 
-Slices of data through /foo[*]/bar syntax. eg. retrieve all the bar keys from each element of the foo
-array.
-
-allow accessing the results of coderefs eg. /foo()/bar retreive the result of the foo coderef/method
-of the object
+Slices of data through /foo[*]/bar syntax. eg. retrieve all the bar keys
+from each element of the foo array.
 
 =head1 AUTHOR
 
