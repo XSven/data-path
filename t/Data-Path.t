@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More import => [ qw( BAIL_OUT is like new_ok ok use_ok ) ], tests => 15;
+use Test::More import => [ qw( BAIL_OUT is like new_ok ok use_ok ) ], tests => 22;
 use Test::Fatal      qw( exception );
 use Test::MockObject ();
 
@@ -64,20 +64,18 @@ like exception { $self->get( '/complex/home/' ) }, qr/callback_error_key/, 'use 
 like exception { $self->get( '/complex/level2[99]/level3_0' ) }, qr/callback_error_index/,
   'use index does not exist callback';
 
-__END__
-my $obj = Test::MockObject->new( {} );
+is $self->get( '/method()' ), $data->{ method }->(), "subroutine returned";
 
+my $obj = Test::MockObject->new( {} );
 $obj->mock( 'method2' => sub { 'method2 val' } );
-my $b2 = new_ok $class => [ $obj ];
-is( $b->get( '/method()' ),         $data->{ method }->(), "subroutine returned" );
-is( $b2->get( '/method2()', $obj ), $obj->method2(),       "method returned" );
+$self = new_ok $class => [ $obj ];
+is $self->get( '/method2()', $obj ), $obj->method2(), "method returned";
 
 my $deep_method = { foo => $obj };
+$self = new_ok $class => [ $deep_method ];
+is $self->get( '/foo/method2()' ), $obj->method2(), "deep method returned";
 
-$b = new_ok $class => [ $deep_method ];
-is( $b->get( '/foo/method2()' ), $obj->method2(), "deep method returned" );
-
-throws_ok { $class->new( { foo => 1 } )->get( 'goo' ) }
-qr/malformed path expression/, 'malformed path expression throws an error';
-throws_ok { $class->new( { foo => [ 1, 2 ] } )->get( '/foo[]' ) }
-qr/malformed array index request/, 'malformed array path expression throws an error';
+like exception { $class->new( { foo => 1 } )->get( 'goo' ) },
+  qr/malformed path expression/, 'malformed path expression throws an error';
+like exception { $class->new( { foo => [ 1, 2 ] } )->get( '/foo[]' ) },
+  qr/malformed array index request/, 'malformed array path expression throws an error';
