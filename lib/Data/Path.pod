@@ -2,7 +2,7 @@
 
 =head1 NAME
 
-Data::Path - Perl extension for XPath like accessing from complex data structs
+Data::Path - Perl extension for XPath like accessing from complex data structures
 
 =head1 SYNOPSIS
 
@@ -31,7 +31,7 @@ Data::Path - Perl extension for XPath like accessing from complex data structs
 
 =head1 DESCRIPTION
 
-XPath like access to get values from a complex data structs.
+XPath like access to get values from a complex data structures.
 
 C<key_does_not_exist> / C<index_does_not_exist> are only called if it was not
 the last part of the path.  If the last part of path is not exists C<undef>

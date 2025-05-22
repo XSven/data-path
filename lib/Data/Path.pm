@@ -61,6 +61,8 @@ sub get {
   # set data to
   $data ||= $self->{ data };
 
+  return $data if $rkey eq '';
+
   # get key till / or [
   my $key = $1 if ( $rkey =~ s/^\/([^\/|\[]+)//o );
   croak 'malformed path expression'

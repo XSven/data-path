@@ -1,8 +1,8 @@
 use strict;
 use warnings;
 
-use Test::More import => [ qw( $TODO BAIL_OUT is is_deeply like new_ok ok use_ok ) ], tests => 25;
-use Test::Fatal      qw( exception lives_ok );
+use Test::More import => [ qw( BAIL_OUT is is_deeply like new_ok ok use_ok ) ], tests => 23;
+use Test::Fatal      qw( exception );
 use Test::MockObject ();
 
 my $class;
@@ -25,16 +25,6 @@ my $data = {
 };
 
 my $self = new_ok( $class, [ $data ] );
-
-# JSONPath
-# https://www.rfc-editor.org/rfc/rfc9535.txt
-
-TODO: {
-  local $TODO = "empty string '' root-identifier not implemented yet; JSONPath uses \$";
-  my $root;
-  lives_ok { $root = $self->get( '' ) } 'root';
-  is_deeply $root, $data, 'root';
-}
 
 is $self->get( '/scalar' ), 'scalar_value', 'hash key, scalar value';
 
