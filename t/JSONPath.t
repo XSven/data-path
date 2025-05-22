@@ -1,7 +1,7 @@
 use strict;
 use warnings;
 
-use Test::More import => [ qw( BAIL_OUT is is_deeply new_ok plan subtest use_ok ) ], tests => 2;
+use Test::More import => [ qw( BAIL_OUT is is_deeply new_ok plan subtest use_ok ) ], tests => 3;
 use Test::Fatal      qw( exception lives_ok );
 use Test::MockObject ();
 
@@ -27,4 +27,16 @@ subtest 'access root node' => sub {
   # the whole Perl data structure
   lives_ok { $root_node = $self->get( '' ) } 'can get root node';
   is_deeply $root_node, $data, 'root node refers to whole Perl data structure';
+};
+
+subtest 'index based selection' => sub {
+  plan tests => 3;
+
+  my $data = [ qw( a b ) ];
+  my $self = new_ok( $class, [ $data ] );
+  my $value;
+  #
+  $self->get( '[1]' );
+  lives_ok { $value = $self->get( '[1]' ) } 'can get 1st array element';
+  is $value, 'b', 'check value';
 };

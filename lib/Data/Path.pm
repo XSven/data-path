@@ -56,25 +56,32 @@ sub new {
 }
 
 sub get {
-  my ( $self, $rkey, $data ) = @_;
+  my ( $self, $path, $data ) = @_;
 
   # set data to
   $data ||= $self->{ data };
 
-  return $data if $rkey eq '';
+  return $data if $path eq '';
 
-  # get key till / or [
-  my $key = $1 if ( $rkey =~ s/^\/([^\/|\[]+)//o );
-  croak 'malformed path expression'
-    unless $key;
+  my $key;
+  my $index;
+  # match and remove child operator /; JSONPath uses .
+  if ( $path =~ s/^\/// ) {
+    # get key (name)
+    $key = $1 if ( $path =~ s/^([^\/|\[]+)//o );
+    croak 'malformed path expression'
+      unless $key;
 
-  croak 'malformed array index request'
-    if $rkey =~ /^\[([^\d]*)\]/;
-  # check index for index
-  my $index = $1 if ( $rkey =~ s/^\[(\d+)\]//o );
+    croak 'malformed array index request'
+      if $path =~ /^\[([^\d]*)\]/;
+    # check index for index
+    $index = $1 if ( $path =~ s/^\[(\d+)\]//o );
+  } else {
+    croak 'malformed path expression'
+  }
 
   # set rest
-  my $rest = $rkey;
+  my $rest = $path;
 
   # get key from data
   my $value;
