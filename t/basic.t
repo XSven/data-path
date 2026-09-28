@@ -1,16 +1,11 @@
-use strict;
-use warnings;
+use Test2::V1
+  -pragmas,
+  -target => { CLASS => 'Data::Path' },
+  qw( dies is isa_ok like ok plan );
 
-use Test::More import => [ qw( BAIL_OUT is is_deeply like new_ok ok use_ok ) ], tests => 23;
-use Test::Fatal      qw( exception );
 use Test::MockObject ();
 
-my $class;
-
-BEGIN {
-  $class = 'Data::Path';
-  use_ok $class or BAIL_OUT "Cannot load class '$class'!";
-}
+plan 22;
 
 my $data = {
   scalar => 'scalar_value',
@@ -24,11 +19,11 @@ my $data = {
 
 };
 
-my $self = new_ok( $class, [ $data ] );
+isa_ok my $self = CLASS->new( $data ), CLASS;
 
 is $self->get( '/scalar' ), 'scalar_value', 'hash key, scalar value';
 
-is_deeply $self->get( '/array' ), [ qw( array_value0 array_value1 array_value2 array_value3 ) ], 'array value';
+is $self->get( '/array' ), [ qw( array_value0 array_value1 array_value2 array_value3 ) ], 'array value';
 
 is $self->get( '/array[0]' ), 'array_value0', 'hash key, array index, scalar value';
 
@@ -43,41 +38,41 @@ is $self->get( '/complex/level2[0]/level3_0[2]' ), 'level4_2',
 is $self->get( '/complex/level2[0]/level3_0[1]/level4_1/level5' ), 'huhu',
   'hash key, hash key, array index, hash key, array index, hash key, hash key, scalar value';
 
-like exception { $self->get( '/complex/level2[99]/level3_0[1]/level4_1/level5' ) },
+like dies { $self->get( '/complex/level2[99]/level3_0[1]/level4_1/level5' ) },
   qr/key level2\[99\] does not exist/, 'index does not exist';
 
-like exception { $self->get( '/complex/level2[0]/level3_1[1]/level4_1/level5' ) }, qr/key level3_1 does not exist/,
+like dies { $self->get( '/complex/level2[0]/level3_1[1]/level4_1/level5' ) }, qr/key level3_1 does not exist/,
   'key does not exist';
 
 is $self->get( '/complex/level2[0]/level3_0[1]/level4_1/level5_not_exists' ), undef, 'trailing hash key does not exist';
 
 is $self->get( '/complex/level2[0]/level3_0[99]' ), undef, 'trailing array index does not exist';
 
-$self = new_ok $class => [
+isa_ok $self = CLASS->new(
   $data,
   {
     'key_does_not_exist'   => sub { die 'callback_error_key' },
     'index_does_not_exist' => sub { die 'callback_error_index' }
   }
-];
+), CLASS;
 
-like exception { $self->get( '/complex/home/' ) }, qr/callback_error_key/, 'use key does not exist callback';
+like dies { $self->get( '/complex/home/' ) }, qr/callback_error_key/, 'use key does not exist callback';
 
-like exception { $self->get( '/complex/level2[99]/level3_0' ) }, qr/callback_error_index/,
+like dies { $self->get( '/complex/level2[99]/level3_0' ) }, qr/callback_error_index/,
   'use index does not exist callback';
 
-is $self->get( '/method()' ), $data->{ method }->(), "subroutine returned";
+is $self->get( '/method()' ), $data->{ method }->(), 'subroutine returned';
 
 my $obj = Test::MockObject->new( {} );
 $obj->mock( 'method2' => sub { 'method2 val' } );
-$self = new_ok $class => [ $obj ];
-is $self->get( '/method2()', $obj ), $obj->method2(), "method returned";
+isa_ok $self = CLASS->new( $obj ), CLASS;
+is $self->get( '/method2()', $obj ), $obj->method2(), 'method returned';
 
 my $deep_method = { foo => $obj };
-$self = new_ok $class => [ $deep_method ];
-is $self->get( '/foo/method2()' ), $obj->method2(), "deep method returned";
+isa_ok $self = CLASS->new( $deep_method ), CLASS;
+is $self->get( '/foo/method2()' ), $obj->method2(), 'deep method returned';
 
-like exception { $class->new( { foo => 1 } )->get( 'goo' ) },
+like dies { CLASS->new( { foo => 1 } )->get( 'goo' ) },
   qr/malformed path expression/, 'malformed path expression throws an error';
-like exception { $class->new( { foo => [ 1, 2 ] } )->get( '/foo[]' ) },
+like dies { CLASS->new( { foo => [ 1, 2 ] } )->get( '/foo[]' ) },
   qr/malformed array index request/, 'malformed array path expression throws an error';

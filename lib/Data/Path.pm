@@ -1,13 +1,18 @@
-use 5.006001;
+# Prefer numeric version for backwards compatibility
+BEGIN { require 5.006000 }; ## no critic ( RequireUseStrict, RequireUseWarnings )
 use strict;
 use warnings;
 
+#<<<
 package Data::Path;
+# ABSTRACT: Perl extension for XPath like accessing from complex data structures
+BEGIN {
+our $VERSION = 'v1.5.0';
+}
+#>>>
 
 use Scalar::Util qw( reftype blessed );
 use Carp         qw( croak );
-
-our $VERSION = '1.4.1';
 
 sub new {
   my ( $class, $data, $callback ) = @_;

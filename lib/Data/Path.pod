@@ -101,10 +101,13 @@ Marco Schrieck, <marco.schrieck@gmx.de>
 
 Jeremy Wall, <jeremy@marzhillstudios.com>
 
+Sven Willenbuecher, <sven.willenbuecher@gmx.de>
+
 =head1 COPYRIGHT AND LICENSE
 
 Copyright (C) 2006 by Marco Schrieck
 Copyright (C) 2007 by Jeremy Wall
+Copyright (C) 2026 by Sven Willenbücher
 
 This library is free software; you can redistribute it and/or modify
 it under the same terms as Perl itself, either Perl version 5.8.4 or,

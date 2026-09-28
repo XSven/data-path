@@ -1,16 +1,9 @@
-use strict;
-use warnings;
+use Test2::V1
+  -pragmas,
+  -target => { CLASS => 'Data::Path' },
+  qw( is isa_ok lives ok plan subtest );
 
-use Test::More import => [ qw( BAIL_OUT is is_deeply new_ok plan subtest use_ok ) ], tests => 3;
-use Test::Fatal      qw( exception lives_ok );
-use Test::MockObject ();
-
-my $class;
-
-BEGIN {
-  $class = 'Data::Path';
-  use_ok $class or BAIL_OUT "Cannot load class '$class'!";
-}
+plan 2;
 
 # JSONPath
 # https://www.rfc-editor.org/rfc/rfc9535.txt
@@ -18,25 +11,25 @@ BEGIN {
 # the "dot" is the "slash" in Data::Path
 
 subtest 'access root node' => sub {
-  plan tests => 3;
+  plan 3;
 
   my $data = { k => 'v' };
-  my $self = new_ok( $class, [ $data ] );
+  isa_ok my $self = CLASS->new( $data ), CLASS;
   my $root_node;
   # use the root-identifier (the empty string ''; JSONPath uses $) to access
   # the whole Perl data structure
-  lives_ok { $root_node = $self->get( '' ) } 'can get root node';
-  is_deeply $root_node, $data, 'root node refers to whole Perl data structure';
+  ok lives { $root_node = $self->get( '' ) }, 'can get root node';
+  is $root_node, $data, 'root node refers to whole Perl data structure';
 };
 
 subtest 'index based selection' => sub {
-  plan tests => 3;
+  plan 3;
 
   my $data = [ qw( a b ) ];
-  my $self = new_ok( $class, [ $data ] );
+  isa_ok my $self = CLASS->new( $data ), CLASS;
   my $value;
-  #
+
   $self->get( '[1]' );
-  lives_ok { $value = $self->get( '[1]' ) } 'can get 1st array element';
+  ok lives { $value = $self->get( '[1]' ) }, 'can get 1st array element';
   is $value, 'b', 'check value';
 };

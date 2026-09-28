@@ -1,24 +1,36 @@
-Data-Path version 1.0
-=====================
+NAME
+
+Data::Path - Perl extension for XPath like accessing from complex data structures
 
 INSTALLATION
 
-To install this module type the following:
+To install this module, use your preferred CPAN client. If this is "cpanm" then
+run the command
 
-   perl Makefile.PL
-   make
-   make test
-   make install
+  cpanm Data::Path
 
-COPYRIGHT AND LICENCE
+DOCUMENTATION
 
-Put the correct copyright and licence information here.
+After the installation, you can find further documentation using the command
 
-Copyright (C) 2006 by Marco Schrieck
-Copyright (C) 2007 by Jeremfy Wall
+  perldoc Data::Path
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8.4 or,
-at your option, any later version of Perl 5 you may have available.
+DEVELOPMENT
 
+After the download of the source code, you have to install the module
+dependencies first. The dependencies are described in a "cpanfile".
 
+It follows the "configure" step that creates a "Makefile"
+
+  perl Makefile.PL
+
+You may explicitly trigger the "build" step, calling
+
+  make
+
+before executing all test scripts
+
+  make test # in lexicographic order
+  prove t   # in random order
+
+The "RELEASE_TESTING" flag enables the release testing context.
