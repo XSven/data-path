@@ -35,7 +35,7 @@ sub new {
         croak "trie to retrieve an index $index from a no array value (in key $key)"
       },
       retrieve_key_from_non_hash => $callback->{ retrieve_key_from_non_hash } // sub {
-        my ( $data, $key, $index, $value, $path ) = @_; ## no critic ( ProhibitReusedNames )
+        my ( $path, $data, $key, $is_subroutine, $index ) = @_; ## no critic ( ProhibitReusedNames )
         croak "trie to retrieve a key from a no hash value (in key $key)"
       },
       not_a_coderef_or_method => $callback->{ not_a_coderef_or_method } // sub {
@@ -55,6 +55,9 @@ sub get {
 
   my ( $key, $is_subroutine, $index ) = _next_child( \$path );
 
+  $self->{ callback }->{ retrieve_key_from_non_hash }->( $path, $data, $key, $is_subroutine, $index )
+    unless reftype $data eq 'HASH' or blessed $data;
+
   $self->{ callback }->{ key_does_not_exist }->( $data, $key, $index, undef, $path )
     if not exists $data->{ $key } and $path;
 
@@ -68,8 +71,6 @@ sub get {
       $self->{ callback }->{ not_a_coderef_or_method }->( $data, $key, $index, $value, $path )
     }
   } else {
-    # FIXME: retrieve_key_from_non_hash callback should be called if $data
-    # isn't a HASH reference!
     $value = $data->{ $key }
   }
 
@@ -84,14 +85,7 @@ sub get {
     }
   }
 
-  # check if last element is reached
-  if ( $path ) {
-    if ( reftype $value eq 'HASH' || blessed $value ) {
-      $value = $self->get( $path, $value )
-    } else {
-      $self->{ callback }->{ retrieve_key_from_non_hash }->( $data, $key, $index, $value, $path )
-    }
-  }
+  $value = $self->get( $path, $value ) if $path;
 
   $value
 }
