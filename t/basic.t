@@ -1,11 +1,20 @@
 use Test2::V1
   -pragmas,
   -target => { CLASS => 'Data::Path' },
-  qw( dies is isa_ok like ok plan );
+  qw( dies is isa_ok like ok plan subtest );
 
 use Test::MockObject ();
 
-plan 23;
+plan 21;
+
+subtest 'Malformed path expressions' => sub {
+  plan 3;
+
+  like dies { CLASS->new( { foo => 1 } )->get( 'goo' ) }, qr/missing child operator/, 'Missing child operator';
+#like dies { CLASS->new( { foo => [ 1, 2 ] } )->get( '/foo[0]a' ) }, qr/missing child operator/, 'Missing child operator';
+  like dies { CLASS->new( { foo => 1 } )->get( '/[3]' ) },          qr/undefined key/,       'Undefined key';
+  like dies { CLASS->new( { foo => [ 1, 2 ] } )->get( '/foo[]' ) }, qr/invalid array index/, 'Invalid array index'
+};
 
 my $data = {
   scalar => 'scalar_value',
@@ -73,9 +82,3 @@ my $deep_method = { foo => $obj };
 isa_ok $self = CLASS->new( $deep_method ), CLASS;
 is $self->get( '/foo/method2()' ), $obj->method2(), 'deep method returned';
 
-like dies { CLASS->new( { foo => 1 } )->get( 'goo' ) },
-  qr/\AMalformed path expression/, 'Malformed path expression caused by missing child operator';
-like dies { CLASS->new( { foo => 1 } )->get( '/[3]' ) },
-  qr/\AMalformed path expression/, 'Malformed path expression caused by undefined key';
-like dies { CLASS->new( { foo => [ 1, 2 ] } )->get( '/foo[]' ) },
-  qr/Malformed path expression/, 'Malformed path expression caused by invalid array index'

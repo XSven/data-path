@@ -23,23 +23,23 @@ sub new {
     # Set callbacks to default if not given
     callback => {
       key_does_not_exist => $callback->{ key_does_not_exist } // sub {
-        my ( $data, $key, $index, $value, $rest ) = @_; ## no critic ( ProhibitReusedNames )
+        my ( $data, $key, $index, $value, $path ) = @_; ## no critic ( ProhibitReusedNames )
         croak "key $key does not exist"
       },
       index_does_not_exist => $callback->{ index_does_not_exist } // sub {
-        my ( $data, $key, $index, $value, $rest ) = @_; ## no critic ( ProhibitReusedNames )
+        my ( $data, $key, $index, $value, $path ) = @_; ## no critic ( ProhibitReusedNames )
         croak "key $key\[$index\] does not exist"
       },
       retrieve_index_from_non_array => $callback->{ retrieve_index_from_non_array } // sub {
-        my ( $data, $key, $index, $value, $rest ) = @_; ## no critic ( ProhibitReusedNames )
+        my ( $data, $key, $index, $value, $path ) = @_; ## no critic ( ProhibitReusedNames )
         croak "trie to retrieve an index $index from a no array value (in key $key)"
       },
       retrieve_key_from_non_hash => $callback->{ retrieve_key_from_non_hash } // sub {
-        my ( $data, $key, $index, $value, $rest ) = @_; ## no critic ( ProhibitReusedNames )
+        my ( $data, $key, $index, $value, $path ) = @_; ## no critic ( ProhibitReusedNames )
         croak "trie to retrieve a key from a no hash value (in key $key)"
       },
       not_a_coderef_or_method => $callback->{ not_a_coderef_or_method } // sub {
-        my ( $data, $key, $index, $value, $rest ) = @_; ## no critic ( ProhibitReusedNames )
+        my ( $data, $key, $index, $value, $path ) = @_; ## no critic ( ProhibitReusedNames )
         croak "tried to retrieve from a non-existant coderef or method: $key in $data"
       }
     }
@@ -47,6 +47,7 @@ sub new {
 }
 
 sub get {
+  # $path is the current path that gets shortened from the beginning
   my ( $self, $path, $data ) = @_;
   $data //= $self->{ data };
 
@@ -56,7 +57,7 @@ sub get {
   my $index;
   # Match and remove child operator "/"; JSONPath uses "."
   if ( $path =~ s/\A\/// ) {
-    # Get key (name)
+    # Get mandatory key
     if ( $path =~ s/\A ( [^\/|\[]+ )//x ) {
       $key = $1
     } else {
@@ -72,46 +73,43 @@ sub get {
     croak "Malformed path expression caused by missing child operator: $path"
   }
 
-  # set rest
-  my $rest = $path;
+  my $key_refers_to_coderef_or_method = ( $key =~ s/(\(\))\z// );
 
-  # get key from data
+  $self->{ callback }->{ key_does_not_exist }->( $data, $key, $index, undef, $path )
+    if not exists $data->{ $key } and $path;
+
   my $value;
-  if ( $key =~ s/(\(\))$// ) {
-    $self->{ callback }->{ not_a_coderef_or_method }->( $data, $key, $index, $value, $rest )
-      unless exists $data->{ $key }
-      or ( blessed $data && $data->can( $key ) );
-
-    $value = $data->{ $key }->() if ( exists $data->{ $key } );
-    $value = $data->$key()       if blessed $data && $data->can( $key )
+  if ( $key_refers_to_coderef_or_method ) {
+    if ( blessed $data and $data->can( $key ) ) {
+      $value = $data->$key()
+    } elsif ( ref $data->{ $key } eq 'CODE' ) {
+      $value = $data->{ $key }->()
+    } else {
+      $self->{ callback }->{ not_a_coderef_or_method }->( $data, $key, $index, $value, $path )
+    }
   } else {
+    # FIXME: retrieve_key_from_non_hash callback should be called if $data
+    # isn't a HASH reference!
     $value = $data->{ $key }
   }
 
-  # croak if key does not exists and something after that is requested
-  $self->{ callback }->{ key_does_not_exist }->( $data, $key, $index, $value, $rest )
-    if not exists $data->{ $key } and $rest;
-
-  # check index
   if ( defined $index ) {
-
-    # croak if index does not exists and something after that is requested
-    $self->{ callback }->{ index_does_not_exist }->( $data, $key, $index, $value, $rest )
-      if not exists $value->[ $index ] and $rest;
+    $self->{ callback }->{ index_does_not_exist }->( $data, $key, $index, $value, $path )
+      if not exists $value->[ $index ] and $path;
 
     if ( reftype $value eq 'ARRAY' ) {
       $value = $value->[ $index ]
     } else {
-      $self->{ callback }->{ retrieve_index_from_non_array }->( $data, $key, $index, $value, $rest )
+      $self->{ callback }->{ retrieve_index_from_non_array }->( $data, $key, $index, $value, $path )
     }
   }
 
   # check if last element is reached
-  if ( $rest ) {
+  if ( $path ) {
     if ( reftype $value eq 'HASH' || blessed $value ) {
-      $value = $self->get( $rest, $value )
+      $value = $self->get( $path, $value )
     } else {
-      $self->{ callback }->{ retrieve_key_from_non_hash }->( $data, $key, $index, $value, $rest )
+      $self->{ callback }->{ retrieve_key_from_non_hash }->( $data, $key, $index, $value, $path )
     }
   }
 
