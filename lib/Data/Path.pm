@@ -7,7 +7,7 @@ use warnings;
 package Data::Path;
 # ABSTRACT: Perl extension for XPath like accessing from complex data structures
 BEGIN {
-our $VERSION = 'v1.5.0';
+our $VERSION = 'v2.0.0';
 }
 #>>>
 
