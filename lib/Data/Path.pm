@@ -53,33 +53,13 @@ sub get {
 
   return $data if $path eq '';
 
-  my $key;
-  my $index;
-  # Match and remove child operator "/"; JSONPath uses "."
-  if ( $path =~ s/\A\/// ) {
-    # Get mandatory key
-    if ( $path =~ s/\A ( [^\/|\[]+ )//x ) {
-      $key = $1
-    } else {
-      croak "Malformed path expression caused by undefined key: $path"
-    }
-    # Get optional index
-    if ( $path =~ s/\A \[ ( [^\]]* ) \]//x ) {
-      $index = $1;
-      croak "Malformed path expression caused by invalid array index: $index"
-        unless $index =~ m/\A\d+\z/
-    }
-  } else {
-    croak "Malformed path expression caused by missing child operator: $path"
-  }
-
-  my $key_refers_to_coderef_or_method = ( $key =~ s/(\(\))\z// );
+  my ( $key, $is_subroutine, $index ) = _next_child( \$path );
 
   $self->{ callback }->{ key_does_not_exist }->( $data, $key, $index, undef, $path )
     if not exists $data->{ $key } and $path;
 
   my $value;
-  if ( $key_refers_to_coderef_or_method ) {
+  if ( $is_subroutine ) {
     if ( blessed $data and $data->can( $key ) ) {
       $value = $data->$key()
     } elsif ( ref $data->{ $key } eq 'CODE' ) {
@@ -114,6 +94,34 @@ sub get {
   }
 
   $value
+}
+
+sub _next_child {
+  my $path = shift;
+
+  my $key;
+  my $is_subroutine;
+  my $index;
+  # Match and remove child operator "/"; JSONPath uses "."
+  if ( $$path =~ s/\A\/// ) {
+    # Get mandatory key
+    if ( $$path =~ s/\A ( [^\/|\[]+ )//x ) {
+      $key           = $1;
+      $is_subroutine = ( $key =~ s/(\(\))\z// )
+    } else {
+      croak "Malformed path expression caused by undefined key: $path"
+    }
+    # Get optional index
+    if ( $$path =~ s/\A \[ ( [^\]]* ) \]//x ) {
+      $index = $1;
+      croak "Malformed path expression caused by invalid array index: $index"
+        unless $index =~ m/\A\d+\z/
+    }
+  } else {
+    croak "Malformed path expression caused by missing child operator: $path"
+  }
+
+  ( $key, $is_subroutine, $index )
 }
 
 1

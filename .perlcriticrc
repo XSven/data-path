@@ -14,8 +14,6 @@ only_in_void_context = 1
 [-RegularExpressions::RequireExtendedFormatting]
 [-Subroutines::ProtectPrivateSubs]
 [-Subroutines::ProhibitSubroutinePrototypes]
-[Subroutines::ProhibitExcessComplexity]
-max_mccabe = 28
 [Subroutines::ProhibitUnusedPrivateSubroutines]
 allow_name_regex = _(?:build|trigger)_\w+
 [-Subroutines::RequireArgUnpacking]
