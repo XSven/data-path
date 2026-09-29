@@ -5,7 +5,7 @@ use Test2::V1
 
 use Test::MockObject ();
 
-plan 22;
+plan 23;
 
 my $data = {
   scalar => 'scalar_value',
@@ -74,6 +74,8 @@ isa_ok $self = CLASS->new( $deep_method ), CLASS;
 is $self->get( '/foo/method2()' ), $obj->method2(), 'deep method returned';
 
 like dies { CLASS->new( { foo => 1 } )->get( 'goo' ) },
-  qr/malformed path expression/, 'malformed path expression throws an error';
+  qr/\AMalformed path expression/, 'Malformed path expression caused by missing child operator';
+like dies { CLASS->new( { foo => 1 } )->get( '/[3]' ) },
+  qr/\AMalformed path expression/, 'Malformed path expression caused by undefined key';
 like dies { CLASS->new( { foo => [ 1, 2 ] } )->get( '/foo[]' ) },
-  qr/malformed array index request/, 'malformed array path expression throws an error';
+  qr/Malformed path expression/, 'Malformed path expression caused by invalid array index'

@@ -78,15 +78,29 @@ The default callbacks but you can overwrite them.
 
 =over
 
-=item * L<Data::DPath>
+=item *
 
-=item * L<Data::Nested>
+L<Data::DPath>
 
-=item * L<Data::PathSimple>
+=item *
 
-=item * L<Data::SPath>
+L<Data::Nested>
 
-=item * L<Data::SimplePath>
+=item *
+
+L<Data::PathSimple>
+
+=item *
+
+L<Data::SPath>
+
+=item *
+
+L<Data::SimplePath>
+
+=item *
+
+L<JSONPath|https://www.rfc-editor.org/info/rfc9535/>
 
 =back
 
