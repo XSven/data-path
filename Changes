@@ -2,6 +2,8 @@ Release history for Data-Path
 
 v2.0.0    Development Release
           - https://github.com/zaphar/data-path/issues/1
+          - [Subroutines::ProhibitExcessComplexity]
+            max_mccabe = 28
 
 1.4.1     2008-02-27 ZAPHAR
 

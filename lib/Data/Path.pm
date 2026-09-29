@@ -25,33 +25,33 @@ sub new {
     callback => {
       key_does_not_exist => $callback->{ key_does_not_exist }
         || sub {
-        my ( $data, $key, $index, $value, $rest ) = @_;
+        my ( $data, $key, $index, $value, $rest ) = @_; ## no critic ( ProhibitReusedNames )
         croak "key $key does not exist\n";
         }
 
       ,
       index_does_not_exist => $callback->{ index_does_not_exist }
         || sub {
-        my ( $data, $key, $index, $value, $rest ) = @_;
+        my ( $data, $key, $index, $value, $rest ) = @_; ## no critic ( ProhibitReusedNames )
         croak "key $key\[$index\] does not exist\n";
         }
 
       ,
       retrieve_index_from_non_array => $callback->{ retrieve_index_from_non_array }
         || sub {
-        my ( $data, $key, $index, $value, $rest ) = @_;
+        my ( $data, $key, $index, $value, $rest ) = @_; ## no critic ( ProhibitReusedNames )
         croak "trie to retrieve an index $index from a no array value (in key $key)\n";
         }
 
       ,
       retrieve_key_from_non_hash => $callback->{ retrieve_key_from_non_hash }
         || sub {
-        my ( $data, $key, $index, $value, $rest ) = @_;
+        my ( $data, $key, $index, $value, $rest ) = @_; ## no critic ( ProhibitReusedNames )
         croak "trie to retrieve a key from a no hash value (in key $key)\n";
         },
       not_a_coderef_or_method => $callback->{ not_a_coderef_or_method }
         || sub {
-        my ( $data, $key, $index, $value, $rest ) = @_;
+        my ( $data, $key, $index, $value, $rest ) = @_; ## no critic ( ProhibitReusedNames )
         croak "tried to retrieve from a non-existant coderef or method: $key in $data";
         }
     }
@@ -73,14 +73,18 @@ sub get {
   # match and remove child operator /; JSONPath uses .
   if ( $path =~ s/^\/// ) {
     # get key (name)
-    $key = $1 if ( $path =~ s/^([^\/|\[]+)//o );
+    if ( $path =~ s/^([^\/|\[]+)//o ) {
+      $key = $1
+    }
     croak 'malformed path expression'
       unless $key;
 
     croak 'malformed array index request'
       if $path =~ /^\[([^\d]*)\]/;
     # check index for index
-    $index = $1 if ( $path =~ s/^\[(\d+)\]//o );
+    if ( $path =~ s/^\[(\d+)\]//o ) {
+      $index = $1
+    }
   } else {
     croak 'malformed path expression'
   }

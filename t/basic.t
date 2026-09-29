@@ -51,10 +51,11 @@ is $self->get( '/complex/level2[0]/level3_0[99]' ), undef, 'trailing array index
 isa_ok $self = CLASS->new(
   $data,
   {
-    'key_does_not_exist'   => sub { die 'callback_error_key' },
-    'index_does_not_exist' => sub { die 'callback_error_index' }
+    'key_does_not_exist'   => sub { die 'callback_error_key' }, ## no critic ( RequireCarping )
+    'index_does_not_exist' => sub { die 'callback_error_index' } ## no critic ( RequireCarping )
   }
-), CLASS;
+  ),
+  CLASS;
 
 like dies { $self->get( '/complex/home/' ) }, qr/callback_error_key/, 'use key does not exist callback';
 
