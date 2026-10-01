@@ -5,7 +5,7 @@ use Test2::V1
 
 use Test::MockObject ();
 
-plan 16;
+plan 19;
 
 subtest 'Cannot identify selector' => sub {
   plan 3;
@@ -70,6 +70,14 @@ like dies { $self->get( '/complex/home/' ) }, qr/callback_error_key/, 'use key d
 
 like dies { $self->get( '/complex/level2[99]/level3_0' ) }, qr/callback_error_index/,
   'use index does not exist callback';
+
+$data = [ [ qw( a0 a1 ) ], { foo => 7 } ];
+
+isa_ok $self = CLASS->new( $data ), CLASS;
+
+is $self->get( '[0][1]' ), 'a1', 'Select index and select index';
+
+is $self->get( '[1]/foo' ), '7', 'Select index and select key';
 
 __END__
 is $self->get( '/method()' ), $data->{ method }->(), 'subroutine returned';
