@@ -5,7 +5,7 @@ use Test2::V1
 
 use Test::MockObject ();
 
-plan 21;
+plan 16;
 
 subtest 'Cannot identify selector' => sub {
   plan 3;
@@ -51,7 +51,7 @@ like dies { $self->get( '/complex/level2[99]/level3_0[1]/level4_1/level5' ) },
   qr/\AArray index 99 does not exist/, 'Index does not exist';
 
 like dies { $self->get( '/complex/level2[0]/level3_1[1]/level4_1/level5' ) }, qr/key level3_1 does not exist/,
-  'key does not exist';
+  'Key does not exist';
 
 is $self->get( '/complex/level2[0]/level3_0[1]/level4_1/level5_not_exists' ), undef, 'trailing hash key does not exist';
 
@@ -71,6 +71,7 @@ like dies { $self->get( '/complex/home/' ) }, qr/callback_error_key/, 'use key d
 like dies { $self->get( '/complex/level2[99]/level3_0' ) }, qr/callback_error_index/,
   'use index does not exist callback';
 
+__END__
 is $self->get( '/method()' ), $data->{ method }->(), 'subroutine returned';
 
 my $obj = Test::MockObject->new( {} );

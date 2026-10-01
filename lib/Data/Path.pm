@@ -25,7 +25,7 @@ sub new {
     # Set callbacks to default if not given
     callback => {
       key_does_not_exist => $callback->{ key_does_not_exist } // sub {
-        my ( $data, $key, $index, $value, $path ) = @_; ## no critic ( ProhibitReusedNames )
+        my ( $path, $data, $key ) = @_; ## no critic ( ProhibitReusedNames )
         croak "key $key does not exist"
       },
       index_does_not_exist => $callback->{ index_does_not_exist } // sub {
@@ -33,11 +33,11 @@ sub new {
         croak "Array index $index does not exist"
       },
       retrieve_index_from_non_array => $callback->{ retrieve_index_from_non_array } // sub {
-        my ( $data, $key, $index, $value, $path ) = @_; ## no critic ( ProhibitReusedNames )
-        croak "trie to retrieve an index $index from a no array value (in key $key)"
+        my ( $path, $data, $index ) = @_; ## no critic ( ProhibitReusedNames )
+        croak "trie to retrieve an index $index from a"
       },
       retrieve_key_from_non_hash => $callback->{ retrieve_key_from_non_hash } // sub {
-        my ( $path, $data, $key, $is_subroutine, $index ) = @_; ## no critic ( ProhibitReusedNames )
+        my ( $path, $data, $key ) = @_; ## no critic ( ProhibitReusedNames )
         croak "trie to retrieve a key from a no hash value (in key $key)"
       },
       not_a_coderef_or_method => $callback->{ not_a_coderef_or_method } // sub {
@@ -61,22 +61,23 @@ sub get {
   if ( defined $key ) {
     $self->{ callback }->{ retrieve_key_from_non_hash }->( $path, $data, $key, $is_subroutine )
       unless reftype $data eq 'HASH' or blessed $data;
-    #$self->{ callback }->{ key_does_not_exist }->( $data, $key, $index, undef, $path )
-    #    if not exists $data->{ $key } and $path;
 
-    if ( $is_subroutine ) {
-      if ( blessed $data and $data->can( $key ) ) {
-        $value = $data->$key()
-      } elsif ( ref $data->{ $key } eq 'CODE' ) {
-        $value = $data->{ $key }->()
-      } else {
-        $self->{ callback }->{ not_a_coderef_or_method }->( $data, $key, $index, $value, $path )
-      }
-    } else {
-      $value = $data->{ $key }
-    }
+    #    if ( $is_subroutine ) {
+    #      if ( blessed $data and $data->can( $key ) ) {
+    #        $value = $data->$key()
+    #      } elsif ( ref $data->{ $key } eq 'CODE' ) {
+    #        $value = $data->{ $key }->()
+    #      } else {
+    #        $self->{ callback }->{ not_a_coderef_or_method }->( $data, $key, $index, $value, $path )
+    #      }
+    #    } else {
+    $self->{ callback }->{ retrieve_key_from_non_hash }->( $path, $data, $key )
+      unless reftype $data eq 'HASH';
+    $self->{ callback }->{ key_does_not_exist }->( $path, $data, $key )
+      if not exists $data->{ $key } and $path;
+    $value = $data->{ $key }
   } elsif ( defined $index ) {
-    $self->{ callback }->{ retrieve_index_from_non_array }->( $data, $key, $index, $value, $path )
+    $self->{ callback }->{ retrieve_index_from_non_array }->( $path, $data, $index )
       unless reftype $data eq 'ARRAY';
     $self->{ callback }->{ index_does_not_exist }->( $path, $data, $index )
       if not exists $data->[ $index ] and $path;
@@ -96,7 +97,7 @@ sub _next_selector {
   my $index;
   if ( $$path =~ s/\A \/ ( [^\/|\[]+ )//x ) {    # Key selector (example: /foo )
     $key           = $1;
-    $is_subroutine = ( $key =~ s/(\(\))\z// )
+    $is_subroutine = ( $key =~ s/(\(\))\z// )    # Key is method or sub name
   } elsif ( $$path =~ s/\A \[ ( \d+ ) \]//x ) {    # Index selector (example: [5])
     $index = $1;
   } else {
