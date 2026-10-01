@@ -14,7 +14,7 @@ our $VERSION = 'v2.0.0';
 use Scalar::Util qw( reftype blessed );
 use Carp         qw( croak );
 
-our $Debug;
+our $Debug; ## no critic ( ProhibitPackageVars )
 
 sub new {
   my ( $class, $data, $callback ) = @_;

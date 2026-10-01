@@ -10,19 +10,19 @@ plan 2;
 # Segments can use bracket notation, or the more compact dot notation.
 # the "dot" is the "slash" in Data::Path
 
-subtest 'access root node' => sub {
+subtest 'Access root node' => sub {
   plan 3;
 
   my $data = { k => 'v' };
   isa_ok my $self = CLASS->new( $data ), CLASS;
   my $root_node;
-  # use the root-identifier (the empty string ''; JSONPath uses $) to access
-  # the whole Perl data structure
-  ok lives { $root_node = $self->get( '' ) }, 'can get root node';
-  is $root_node, $data, 'root node refers to whole Perl data structure';
+  # Use the root-identifier (the empty string ''; JSONPath uses $) to access
+  # the whole data structure
+  ok lives { $root_node = $self->get( '' ) }, 'Can get root node';
+  is $root_node, $data, 'Root node refers to whole data structure'
 };
 
-subtest 'index based selection' => sub {
+subtest 'Index based selection of array data structure' => sub {
   plan 3;
 
   my $data = [ qw( a b ) ];
@@ -30,6 +30,6 @@ subtest 'index based selection' => sub {
   my $value;
 
   $self->get( '[1]' );
-  ok lives { $value = $self->get( '[1]' ) }, 'can get 1st array element';
-  is $value, 'b', 'check value';
-};
+  ok lives { $value = $self->get( '[1]' ) }, 'Can get 1st array element';
+  is $value, 'b', 'Check value'
+}
