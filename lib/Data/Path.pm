@@ -55,27 +55,26 @@ sub get {
 
   return $data if $path eq '';
 
-  my ( $key, $is_subroutine, $index ) = _next_selector( \$path );
+  my ( $key, $is_sub, $index ) = _next_selector( \$path );
 
   my $value;
   if ( defined $key ) {
-    $self->{ callback }->{ retrieve_key_from_non_hash }->( $path, $data, $key, $is_subroutine )
-      unless reftype $data eq 'HASH';
-
-    #    if ( $is_subroutine ) {
-    #      if ( blessed $data and $data->can( $key ) ) {
-    #        $value = $data->$key()
-    #      } elsif ( ref $data->{ $key } eq 'CODE' ) {
-    #        $value = $data->{ $key }->()
-    #      } else {
-    #        $self->{ callback }->{ not_a_coderef_or_method }->( $data, $key, $index, $value, $path )
-    #      }
-    #    } else {
-    $self->{ callback }->{ retrieve_key_from_non_hash }->( $path, $data, $key )
-      unless reftype $data eq 'HASH';
-    $self->{ callback }->{ key_does_not_exist }->( $path, $data, $key )
-      if not exists $data->{ $key } and $path;
-    $value = $data->{ $key }
+    if ( $is_sub ) {
+      croak 'Not implemented yet'
+      #      if ( blessed $data and $data->can( $key ) ) {
+      #        $value = $data->$key()
+      #      } elsif ( ref $data->{ $key } eq 'CODE' ) {
+      #        $value = $data->{ $key }->()
+      #      } else {
+      #        $self->{ callback }->{ not_a_coderef_or_method }->( $data, $key, $index, $value, $path )
+      #      }
+    } else {
+      $self->{ callback }->{ retrieve_key_from_non_hash }->( $path, $data, $key )
+        unless reftype $data eq 'HASH';
+      $self->{ callback }->{ key_does_not_exist }->( $path, $data, $key )
+        if not exists $data->{ $key } and $path;
+      $value = $data->{ $key }
+    }
   } elsif ( defined $index ) {
     $self->{ callback }->{ retrieve_index_from_non_array }->( $path, $data, $index )
       unless reftype $data eq 'ARRAY';
@@ -93,21 +92,20 @@ sub _next_selector {
   my $path = shift;
 
   my $key;
-  my $is_subroutine;
+  my $is_sub;
   my $index;
   if ( $$path =~ s/\A \/ ( [^\/|\[]+ )//x ) {    # Key selector (example: /foo )
-    $key           = $1;
-    $is_subroutine = ( $key =~ s/(\(\))\z// )    # Key is method or sub name
+    $key    = $1;
+    $is_sub = ( $key =~ s/(\(\))\z// )           # Key is method or sub name
   } elsif ( $$path =~ s/\A \[ ( \d+ ) \]//x ) {    # Index selector (example: [5])
     $index = $1;
   } else {
     croak "Cannot identify selector: $$path"
   }
 
-  printf STDERR "path: %s, key: %s, is_subroutine: %s, index: %s\n", $$path, $key // '', $is_subroutine ? 'yes' : 'no',
-    $index // ''
+  printf STDERR "path: %s, key: %s, is_sub: %s, index: %s\n", $$path, $key // '', $is_sub ? 'yes' : 'no', $index // ''
     if $Debug;
-  ( $key, $is_subroutine, $index )
+  ( $key, $is_sub, $index )
 }
 
 1
