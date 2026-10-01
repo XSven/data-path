@@ -11,7 +11,7 @@ our $VERSION = 'v2.0.0';
 }
 #>>>
 
-use Scalar::Util qw( reftype blessed );
+use Scalar::Util qw( reftype );
 use Carp         qw( croak );
 
 our $Debug; ## no critic ( ProhibitPackageVars )
@@ -60,7 +60,7 @@ sub get {
   my $value;
   if ( defined $key ) {
     $self->{ callback }->{ retrieve_key_from_non_hash }->( $path, $data, $key, $is_subroutine )
-      unless reftype $data eq 'HASH' or blessed $data;
+      unless reftype $data eq 'HASH';
 
     #    if ( $is_subroutine ) {
     #      if ( blessed $data and $data->can( $key ) ) {
