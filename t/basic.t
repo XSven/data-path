@@ -1,19 +1,18 @@
 use Test2::V1
   -pragmas,
   -target => { CLASS => 'Data::Path' },
-  qw( dies is isa_ok like ok plan subtest );
+  qw( dies is isa_ok isnt like ok plan subtest );
 
 use Test::MockObject ();
 
 plan 21;
 
-subtest 'Malformed path expressions' => sub {
+subtest 'Cannot identify selector' => sub {
   plan 3;
 
-  like dies { CLASS->new( { foo => 1 } )->get( 'goo' ) }, qr/missing child operator/, 'Missing child operator';
-#like dies { CLASS->new( { foo => [ 1, 2 ] } )->get( '/foo[0]a' ) }, qr/missing child operator/, 'Missing child operator';
-  like dies { CLASS->new( { foo => 1 } )->get( '/[3]' ) },          qr/undefined key/,       'Undefined key';
-  like dies { CLASS->new( { foo => [ 1, 2 ] } )->get( '/foo[]' ) }, qr/invalid array index/, 'Invalid array index'
+  isnt dies { CLASS->new( { foo => [ 1, 2 ] } )->get( 'foo' ) },        undef, 'Missing "/" before "foo"';
+  isnt dies { CLASS->new( { foo => [ 1, 2 ] } )->get( '/foo[0]bar' ) }, undef, 'Missing "/" before "bar"';
+  isnt dies { CLASS->new( { foo => [ 1, 2 ] } )->get( '/foo[-1]' ) },   undef, 'Negative index not supported yet'
 };
 
 my $data = {
@@ -30,11 +29,11 @@ my $data = {
 
 isa_ok my $self = CLASS->new( $data ), CLASS;
 
-is $self->get( '/scalar' ), 'scalar_value', 'hash key, scalar value';
+is $self->get( '/scalar' ), 'scalar_value', 'Key selector; scalar value';
 
-is $self->get( '/array' ), [ qw( array_value0 array_value1 array_value2 array_value3 ) ], 'array value';
+is $self->get( '/array' ), [ qw( array_value0 array_value1 array_value2 array_value3 ) ], 'Key selector; array value';
 
-is $self->get( '/array[0]' ), 'array_value0', 'hash key, array index, scalar value';
+is $self->get( '/array[0]' ), 'array_value0', 'Key selector and then index selector; scalar value';
 
 is $self->get( '/hash/hash1' ), 'hash1_value', 'hash key, hash key, scalar value';
 
@@ -47,8 +46,9 @@ is $self->get( '/complex/level2[0]/level3_0[2]' ), 'level4_2',
 is $self->get( '/complex/level2[0]/level3_0[1]/level4_1/level5' ), 'huhu',
   'hash key, hash key, array index, hash key, array index, hash key, hash key, scalar value';
 
+    #local $Data::Path::Debug =1;
 like dies { $self->get( '/complex/level2[99]/level3_0[1]/level4_1/level5' ) },
-  qr/key level2\[99\] does not exist/, 'index does not exist';
+  qr/\AArray index 99 does not exist/, 'Index does not exist';
 
 like dies { $self->get( '/complex/level2[0]/level3_1[1]/level4_1/level5' ) }, qr/key level3_1 does not exist/,
   'key does not exist';

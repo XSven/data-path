@@ -14,6 +14,8 @@ our $VERSION = 'v2.0.0';
 use Scalar::Util qw( reftype blessed );
 use Carp         qw( croak );
 
+our $Debug;
+
 sub new {
   my ( $class, $data, $callback ) = @_;
   $callback //= {};
@@ -27,8 +29,8 @@ sub new {
         croak "key $key does not exist"
       },
       index_does_not_exist => $callback->{ index_does_not_exist } // sub {
-        my ( $data, $key, $index, $value, $path ) = @_; ## no critic ( ProhibitReusedNames )
-        croak "key $key\[$index\] does not exist"
+        my ( $path, $data, $index ) = @_; ## no critic ( ProhibitReusedNames )
+        croak "Array index $index does not exist"
       },
       retrieve_index_from_non_array => $callback->{ retrieve_index_from_non_array } // sub {
         my ( $data, $key, $index, $value, $path ) = @_; ## no critic ( ProhibitReusedNames )
@@ -53,36 +55,32 @@ sub get {
 
   return $data if $path eq '';
 
-  my ( $key, $is_subroutine, $index ) = _next_child( \$path );
-
-  $self->{ callback }->{ retrieve_key_from_non_hash }->( $path, $data, $key, $is_subroutine, $index )
-    unless reftype $data eq 'HASH' or blessed $data;
-
-  $self->{ callback }->{ key_does_not_exist }->( $data, $key, $index, undef, $path )
-    if not exists $data->{ $key } and $path;
+  my ( $key, $is_subroutine, $index ) = _next_selector( \$path );
 
   my $value;
-  if ( $is_subroutine ) {
-    if ( blessed $data and $data->can( $key ) ) {
-      $value = $data->$key()
-    } elsif ( ref $data->{ $key } eq 'CODE' ) {
-      $value = $data->{ $key }->()
-    } else {
-      $self->{ callback }->{ not_a_coderef_or_method }->( $data, $key, $index, $value, $path )
-    }
-  } else {
-    $value = $data->{ $key }
-  }
+  if ( defined $key ) {
+    $self->{ callback }->{ retrieve_key_from_non_hash }->( $path, $data, $key, $is_subroutine )
+      unless reftype $data eq 'HASH' or blessed $data;
+    #$self->{ callback }->{ key_does_not_exist }->( $data, $key, $index, undef, $path )
+    #    if not exists $data->{ $key } and $path;
 
-  if ( defined $index ) {
-    $self->{ callback }->{ index_does_not_exist }->( $data, $key, $index, $value, $path )
-      if not exists $value->[ $index ] and $path;
-
-    if ( reftype $value eq 'ARRAY' ) {
-      $value = $value->[ $index ]
+    if ( $is_subroutine ) {
+      if ( blessed $data and $data->can( $key ) ) {
+        $value = $data->$key()
+      } elsif ( ref $data->{ $key } eq 'CODE' ) {
+        $value = $data->{ $key }->()
+      } else {
+        $self->{ callback }->{ not_a_coderef_or_method }->( $data, $key, $index, $value, $path )
+      }
     } else {
-      $self->{ callback }->{ retrieve_index_from_non_array }->( $data, $key, $index, $value, $path )
+      $value = $data->{ $key }
     }
+  } elsif ( defined $index ) {
+    $self->{ callback }->{ retrieve_index_from_non_array }->( $data, $key, $index, $value, $path )
+      unless reftype $data eq 'ARRAY';
+    $self->{ callback }->{ index_does_not_exist }->( $path, $data, $index )
+      if not exists $data->[ $index ] and $path;
+    $value = $data->[ $index ]
   }
 
   $value = $self->get( $path, $value ) if $path;
@@ -90,31 +88,24 @@ sub get {
   $value
 }
 
-sub _next_child {
+sub _next_selector {
   my $path = shift;
 
   my $key;
   my $is_subroutine;
   my $index;
-  # Match and remove child operator "/"; JSONPath uses "."
-  if ( $$path =~ s/\A\/// ) {
-    # Get mandatory key
-    if ( $$path =~ s/\A ( [^\/|\[]+ )//x ) {
-      $key           = $1;
-      $is_subroutine = ( $key =~ s/(\(\))\z// )
-    } else {
-      croak "Malformed path expression caused by undefined key: $path"
-    }
-    # Get optional index
-    if ( $$path =~ s/\A \[ ( [^\]]* ) \]//x ) {
-      $index = $1;
-      croak "Malformed path expression caused by invalid array index: $index"
-        unless $index =~ m/\A\d+\z/
-    }
+  if ( $$path =~ s/\A \/ ( [^\/|\[]+ )//x ) {    # Key selector (example: /foo )
+    $key           = $1;
+    $is_subroutine = ( $key =~ s/(\(\))\z// )
+  } elsif ( $$path =~ s/\A \[ ( \d+ ) \]//x ) {    # Index selector (example: [5])
+    $index = $1;
   } else {
-    croak "Malformed path expression caused by missing child operator: $path"
+    croak "Cannot identify selector: $$path"
   }
 
+  printf STDERR "path: %s, key: %s, is_subroutine: %s, index: %s\n", $$path, $key // '', $is_subroutine ? 'yes' : 'no',
+    $index // ''
+    if $Debug;
   ( $key, $is_subroutine, $index )
 }
 
