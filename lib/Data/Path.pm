@@ -26,7 +26,7 @@ sub new {
     callback => {
       key_does_not_exist => $callback->{ key_does_not_exist } // sub {
         my ( $path, $data, $key ) = @_; ## no critic ( ProhibitReusedNames )
-        croak "key $key does not exist"
+        croak "Hash key '$key' does not exist"
       },
       index_does_not_exist => $callback->{ index_does_not_exist } // sub {
         my ( $path, $data, $index ) = @_; ## no critic ( ProhibitReusedNames )
@@ -34,15 +34,11 @@ sub new {
       },
       retrieve_index_from_non_array => $callback->{ retrieve_index_from_non_array } // sub {
         my ( $path, $data, $index ) = @_; ## no critic ( ProhibitReusedNames )
-        croak "trie to retrieve an index $index from a"
+        croak "Try to retrieve an array index $index from a ${ \( reftype $data ) } reference"
       },
       retrieve_key_from_non_hash => $callback->{ retrieve_key_from_non_hash } // sub {
         my ( $path, $data, $key ) = @_; ## no critic ( ProhibitReusedNames )
-        croak "trie to retrieve a key from a no hash value (in key $key)"
-      },
-      not_a_coderef_or_method => $callback->{ not_a_coderef_or_method } // sub {
-        my ( $data, $key, $index, $value, $path ) = @_; ## no critic ( ProhibitReusedNames )
-        croak "tried to retrieve from a non-existant coderef or method: $key in $data"
+        croak "Try to retrieve a hash key '$key' from a ${ \( reftype $data ) } reference"
       }
     }
   } => $class

@@ -22,7 +22,6 @@ on runtime => sub {
 
 on test => sub {
   requires 'Config'                         => '0';
-  requires 'Test::MockObject'               => '0';
   requires 'Test2::Require::ReleaseTesting' => '0';
   requires 'Test2::V1'                      => '0'
 };

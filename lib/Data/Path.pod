@@ -43,36 +43,22 @@ The default callbacks but you can overwrite them.
 
   {
     key_does_not_exist => sub {
-      my ($data, $key, $index, $value, $rest ) = @_;
-      croak "key $key does not exists\n";
+      my ( $path, $data, $key ) = @_;
+      croak "Hash key '$key' does not exist"
     },
     index_does_not_exist => sub {
-      my ($data, $key, $index, $value, $rest ) = @_;
-      croak "key $key\[$index\] does not exists\n";
+      my ( $path, $data, $index ) = @_;
+      croak "Array index $index does not exist"
     },
+    retrieve_key_from_non_hash => sub {
+      my ( $path, $data, $key ) = @_;
+      croak "Try to retrieve a hash key '$key' from a ${ \( reftype $data ) } reference"
+    }
     retrieve_index_from_non_array => sub {
-      my ($data, $key, $index, $value, $rest ) = @_;
-      croak "trie to retrieve an index $index from a no array value (in key $key)\n";
-    }, retrieve_key_from_non_hash => sub {
-      my ($data, $key, $index, $value, $rest ) = @_;
-      croak "trie to retrieve a key from a no hash value (in key $key)\n";
-    },
-    not_a_coderef_or_method  => $callback->{not_a_coderef_or_method} ||
-    sub {
-      my ($data, $key, $index, $value, $rest )=@_;
-      croak "tried to retrieve from a non-existant coderef or method";
+      my ( $path, $data, $index ) = @_;
+      croak "Try to retrieve an array index $index from a ${ \( reftype $data ) } reference"
     }
   }
-
-=head2 EXMAPLE overwrite callback
-
-  my $hpath = Data::Path->new(
-    $hashdata,
-    {
-      key_does_not_exist => sub { die "key not found\n" },
-      index_does_not_exist => sub { die "index not found\n" }
-    }
-  );
 
 =head1 SEE ALSO
 

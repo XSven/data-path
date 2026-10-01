@@ -3,9 +3,7 @@ use Test2::V1
   -target => { CLASS => 'Data::Path' },
   qw( dies is isa_ok isnt like ok plan subtest );
 
-use Test::MockObject ();
-
-plan 19;
+plan 21;
 
 subtest 'Cannot identify selector' => sub {
   plan 3;
@@ -46,12 +44,12 @@ is $self->get( '/complex/level2[0]/level3_0[2]' ), 'level4_2',
 is $self->get( '/complex/level2[0]/level3_0[1]/level4_1/level5' ), 'huhu',
   'hash key, hash key, array index, hash key, array index, hash key, hash key, scalar value';
 
-    #local $Data::Path::Debug =1;
+#local $Data::Path::Debug =1;
 like dies { $self->get( '/complex/level2[99]/level3_0[1]/level4_1/level5' ) },
-  qr/\AArray index 99 does not exist/, 'Index does not exist';
+  qr/\AArray index 99 does not exist/, '"index_does_not_exist" callback fires';
 
-like dies { $self->get( '/complex/level2[0]/level3_1[1]/level4_1/level5' ) }, qr/key level3_1 does not exist/,
-  'Key does not exist';
+like dies { $self->get( '/complex/level2[0]/level3_1[1]/level4_1/level5' ) }, qr/\AHash key 'level3_1' does not exist/,
+  '"key_does_not_exist" callback fires';
 
 is $self->get( '/complex/level2[0]/level3_0[1]/level4_1/level5_not_exists' ), undef, 'trailing hash key does not exist';
 
@@ -79,7 +77,13 @@ is $self->get( '[0][1]' ), 'a1', 'Select index and select index';
 
 is $self->get( '[1]/foo' ), '7', 'Select index and select key';
 
+like dies { $self->get( '[1][5]' ) }, qr/\ATry to retrieve an array index 5 from a HASH reference/,
+  '"retrieve_index_from_non_array" callback fires';
+
+like dies { $self->get( '[0]/foo' ) }, qr/\ATry to retrieve a hash key 'foo' from a ARRAY reference/,
+  '"retrieve_key_from_non_hash" callback fires'
 __END__
+use Test::MockObject ();
 is $self->get( '/method()' ), $data->{ method }->(), 'subroutine returned';
 
 my $obj = Test::MockObject->new( {} );
