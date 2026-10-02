@@ -74,6 +74,7 @@ sub get {
   } elsif ( defined $index ) {
     $self->{ callback }->{ retrieve_index_from_non_array }->( $path, $data, $index )
       unless reftype $data eq 'ARRAY';
+      # FIXME: As of perl 5.20.2 calling exists on array values is strongly discouraged!
     $self->{ callback }->{ index_does_not_exist }->( $path, $data, $index )
       if not exists $data->[ $index ] and $path;
     $value = $data->[ $index ]
