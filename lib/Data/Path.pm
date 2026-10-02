@@ -90,13 +90,14 @@ sub _next_selector {
   my $key;
   my $is_sub;
   my $index;
+  # \A[A-Za-z_][A-Za-z0-9_]*\z
   if ( $$path =~ s/\A \/ ( [^\/|\[]+ )//x ) {    # Key selector (example: /foo )
     $key    = $1;
     $is_sub = ( $key =~ s/(\(\))\z// )           # Key is method or sub name
-  } elsif ( $$path =~ s/\A \[ ( \d+ ) \]//x ) {    # Index selector (example: [5])
+  } elsif ( $$path =~ s/\A \[ ( 0 | -?[1-9][0-9]* ) \]//x ) {
     $index = $1;
   } else {
-    croak "Cannot identify selector: $$path"
+    croak "Cannot extract next selector from path '$$path'"
   }
 
   printf STDERR "path: %s, key: %s, is_sub: %s, index: %s\n", $$path, $key // '', $is_sub ? 'yes' : 'no', $index // ''

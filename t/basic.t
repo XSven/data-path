@@ -5,12 +5,18 @@ use Test2::V1
 
 plan 21;
 
-subtest 'Cannot identify selector' => sub {
-  plan 3;
+subtest 'Selectors' => sub {
+  plan 13;
 
-  isnt dies { CLASS->new( { foo => [ 1, 2 ] } )->get( 'foo' ) },        undef, 'Missing "/" before "foo"';
-  isnt dies { CLASS->new( { foo => [ 1, 2 ] } )->get( '/foo[0]bar' ) }, undef, 'Missing "/" before "bar"';
-  isnt dies { CLASS->new( { foo => [ 1, 2 ] } )->get( '/foo[-1]' ) },   undef, 'Negative index not supported yet'
+  ok my $sub = CLASS->can( '_next_selector' ), 'Locate private subroutine';
+  my $path = 'foo';
+  like dies { $sub->( \$path ) }, qr/\ACannot extract next selector from path 'foo'/, 'Missing "/" before "foo"';
+  is $path, 'foo', 'Path has not changed';
+  for ( -15, -1, 0, 7, 15 ) {
+    $path = "[$_]";
+    is [ $sub->( \$path ) ], [ undef, undef, $_ ], "Select index $_";
+    is $path,                '',                   'Path is empty'
+  }
 };
 
 my $data = {
