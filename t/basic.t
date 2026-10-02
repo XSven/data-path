@@ -6,12 +6,18 @@ use Test2::V1
 plan 21;
 
 subtest 'Selectors' => sub {
-  plan 13;
+  plan 15;
 
   ok my $sub = CLASS->can( '_next_selector' ), 'Locate private subroutine';
-  my $path = 'foo';
+
+  my $path = '';
+  is [ $sub->( \$path ) ], [ ( undef ) x 3 ], 'Empty path selector';
+  is $path,                '',                'Path is empty';
+
+  $path = 'foo';
   like dies { $sub->( \$path ) }, qr/\ACannot extract next selector from path 'foo'/, 'Missing "/" before "foo"';
   is $path, 'foo', 'Path has not changed';
+
   for ( -15, -1, 0, 7, 15 ) {
     $path = "[$_]";
     is [ $sub->( \$path ) ], [ undef, undef, $_ ], "Select index $_";

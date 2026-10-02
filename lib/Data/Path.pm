@@ -49,8 +49,6 @@ sub get {
   my ( $self, $path, $data ) = @_;
   $data //= $self->{ data };
 
-  return $data if $path eq '';
-
   my ( $key, $is_sub, $index ) = _next_selector( \$path );
 
   my $value;
@@ -74,10 +72,12 @@ sub get {
   } elsif ( defined $index ) {
     $self->{ callback }->{ retrieve_index_from_non_array }->( $path, $data, $index )
       unless reftype $data eq 'ARRAY';
-      # FIXME: As of perl 5.20.2 calling exists on array values is strongly discouraged!
+    # FIXME: As of perl 5.20.2 calling exists on array values is strongly discouraged!
     $self->{ callback }->{ index_does_not_exist }->( $path, $data, $index )
       if not exists $data->[ $index ] and $path;
     $value = $data->[ $index ]
+  } else {
+    $value = $data
   }
 
   $value = $self->get( $path, $value ) if $path;
@@ -92,16 +92,19 @@ sub _next_selector {
   my $is_sub;
   my $index;
   # \A[A-Za-z_][A-Za-z0-9_]*\z
-  if ( $$path =~ s/\A \/ ( [^\/\[]+ )//x ) {    # Key selector (example: /foo )
+  if ( $$path eq '' ) {
+    1
+  } elsif ( $$path =~ s/\A \/ ( [^\/\[]+ )//x ) {    # Key selector (example: /foo )
     $key    = $1;
-    $is_sub = ( $key =~ s/(\(\))\z// )           # Key is method or sub name
+    $is_sub = ( $key =~ s/(\(\))\z// )               # Key is method or sub name
   } elsif ( $$path =~ s/\A \[ ( 0 | -?[1-9][0-9]* ) \]//x ) {
     $index = $1;
   } else {
     croak "Cannot extract next selector from path '$$path'"
   }
 
-  printf STDERR "path: %s, key: %s, is_sub: %s, index: %s\n", $$path, $key // '', $is_sub ? 'yes' : 'no', $index // ''
+  printf STDERR "path: %s, key: %s, is_sub: %s, index: %s\n", $$path, $key // '<undef>', $is_sub // '<undef>',
+    $index // '<undef>'
     if $Debug;
   ( $key, $is_sub, $index )
 }
