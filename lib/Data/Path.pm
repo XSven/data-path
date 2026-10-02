@@ -91,7 +91,7 @@ sub _next_selector {
   my $is_sub;
   my $index;
   # \A[A-Za-z_][A-Za-z0-9_]*\z
-  if ( $$path =~ s/\A \/ ( [^\/|\[]+ )//x ) {    # Key selector (example: /foo )
+  if ( $$path =~ s/\A \/ ( [^\/\[]+ )//x ) {    # Key selector (example: /foo )
     $key    = $1;
     $is_sub = ( $key =~ s/(\(\))\z// )           # Key is method or sub name
   } elsif ( $$path =~ s/\A \[ ( 0 | -?[1-9][0-9]* ) \]//x ) {
