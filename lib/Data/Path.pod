@@ -86,6 +86,10 @@ L<Data::SimplePath>
 
 =item *
 
+L<JSON::Path>
+
+=item *
+
 L<JSONPath|https://www.rfc-editor.org/info/rfc9535/>
 
 =back
