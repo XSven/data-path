@@ -58,10 +58,11 @@ is $self->get( '/complex/level2[0]/level3_0[1]/level4_1/level5' ), 'huhu',
 
 #local $Data::Path::Debug =1;
 like dies { $self->get( '/complex/level2[99]/level3_0[1]/level4_1/level5' ) },
-  qr/\AArray index 99 does not exist/, '"index_does_not_exist" callback fires';
+  qr/\AValue for array index 99 is undefined/, '"array_value_is_undefined" callback fires';
 
-like dies { $self->get( '/complex/level2[0]/level3_1[1]/level4_1/level5' ) }, qr/\AHash key 'level3_1' does not exist/,
-  '"key_does_not_exist" callback fires';
+like dies { $self->get( '/complex/level2[0]/level3_1[1]/level4_1/level5' ) },
+  qr/\AValue for hash key 'level3_1' is undefined/,
+  '"hash_value_is_undefined" callback fires';
 
 is $self->get( '/complex/level2[0]/level3_0[1]/level4_1/level5_not_exists' ), undef, 'trailing hash key does not exist';
 
@@ -70,8 +71,8 @@ is $self->get( '/complex/level2[0]/level3_0[99]' ), undef, 'trailing array index
 isa_ok $self = CLASS->new(
   $data,
   {
-    'key_does_not_exist'   => sub { die 'callback_error_key' }, ## no critic ( RequireCarping )
-    'index_does_not_exist' => sub { die 'callback_error_index' } ## no critic ( RequireCarping )
+    'hash_value_is_undefined'  => sub { die 'callback_error_key' }, ## no critic ( RequireCarping )
+    'array_value_is_undefined' => sub { die 'callback_error_index' } ## no critic ( RequireCarping )
   }
   ),
   CLASS;

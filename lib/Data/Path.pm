@@ -24,13 +24,13 @@ sub new {
     data => $data,
     # Set callbacks to default if not given
     callback => {
-      key_does_not_exist => $callback->{ key_does_not_exist } // sub {
+      hash_value_is_undefined => $callback->{ hash_value_is_undefined } // sub {
         my ( $path, $data, $key ) = @_; ## no critic ( ProhibitReusedNames )
-        croak "Hash key '$key' does not exist"
+        croak "Value for hash key '$key' is undefined"
       },
-      index_does_not_exist => $callback->{ index_does_not_exist } // sub {
+      array_value_is_undefined => $callback->{ array_value_is_undefined } // sub {
         my ( $path, $data, $index ) = @_; ## no critic ( ProhibitReusedNames )
-        croak "Array index $index does not exist"
+        croak "Value for array index $index is undefined"
       },
       retrieve_index_from_non_array => $callback->{ retrieve_index_from_non_array } // sub {
         my ( $path, $data, $index ) = @_; ## no critic ( ProhibitReusedNames )
@@ -65,16 +65,15 @@ sub get {
     } else {
       $self->{ callback }->{ retrieve_key_from_non_hash }->( $path, $data, $key )
         unless reftype $data eq 'HASH';
-      $self->{ callback }->{ key_does_not_exist }->( $path, $data, $key )
-        if not exists $data->{ $key } and $path;
+      $self->{ callback }->{ hash_value_is_undefined }->( $path, $data, $key )
+        if not defined $data->{ $key } and $path;
       $value = $data->{ $key }
     }
   } elsif ( defined $index ) {
     $self->{ callback }->{ retrieve_index_from_non_array }->( $path, $data, $index )
       unless reftype $data eq 'ARRAY';
-    # FIXME: As of perl 5.20.2 calling exists on array values is strongly discouraged!
-    $self->{ callback }->{ index_does_not_exist }->( $path, $data, $index )
-      if not exists $data->[ $index ] and $path;
+    $self->{ callback }->{ array_value_is_undefined }->( $path, $data, $index )
+      if not defined $data->[ $index ] and $path;
     $value = $data->[ $index ]
   } else {
     $value = $data

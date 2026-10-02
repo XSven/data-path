@@ -33,7 +33,7 @@ Data::Path - Perl extension for XPath like accessing from complex data structure
 
 XPath like access to get values from a complex data structures.
 
-C<key_does_not_exist> / C<index_does_not_exist> are only called if it was not
+C<hash_value_is_undefined> / C<array_value_is_undefined> are only called if it was not
 the last part of the path.  If the last part of path is not exists C<undef>
 is returned.
 
@@ -42,13 +42,13 @@ is returned.
 The default callbacks but you can overwrite them.
 
   {
-    key_does_not_exist => sub {
+    hash_value_is_undefined => sub {
       my ( $path, $data, $key ) = @_;
-      croak "Hash key '$key' does not exist"
+      croak "Value for hash key '$key' is undefined"
     },
-    index_does_not_exist => sub {
+    array_value_is_undefined => sub {
       my ( $path, $data, $index ) = @_;
-      croak "Array index $index does not exist"
+      croak "Value for array index $index is undefined"
     },
     retrieve_key_from_non_hash => sub {
       my ( $path, $data, $key ) = @_;
