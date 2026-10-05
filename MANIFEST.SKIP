@@ -1,5 +1,5 @@
 # Avoid dist file
-\bData-Path
+\bData-Selectable
 
 # Avoid version control files.
 \bRCS\b

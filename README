@@ -1,19 +1,19 @@
 NAME
 
-Data::Path - Perl extension for XPath like accessing from complex data structures
+Data::Selectable - Perl extension for XPath like accessing from complex data structures
 
 INSTALLATION
 
 To install this module, use your preferred CPAN client. If this is "cpanm" then
 run the command
 
-  cpanm Data::Path
+  cpanm Data::Selectable
 
 DOCUMENTATION
 
 After the installation, you can find further documentation using the command
 
-  perldoc Data::Path
+  perldoc Data::Selectable
 
 DEVELOPMENT
 

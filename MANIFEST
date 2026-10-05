@@ -1,7 +1,8 @@
 Changes
 cpanfile
-lib/Data/Path.pm
-lib/Data/Path.pod
+lib/Data/Selectable.pm
+lib/Data/Selectable.pod
+LICENSE
 Makefile.PL
 MANIFEST			This list of files
 MY.pm

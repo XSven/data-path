@@ -4,7 +4,7 @@ use strict;
 use warnings;
 
 #<<<
-package Data::Path;
+package Data::Selectable;
 # ABSTRACT: Perl extension for XPath like accessing from complex data structures
 BEGIN {
 our $VERSION = 'v2.0.0';
@@ -44,7 +44,7 @@ sub new {
   } => $class
 }
 
-sub get {
+sub select {
   # $path is the current path that gets shortened from the beginning
   my ( $self, $path, $data ) = @_;
   $data //= $self->{ data };
@@ -79,7 +79,7 @@ sub get {
     $value = $data
   }
 
-  $value = $self->get( $path, $value ) if $path;
+  $value = $self->select( $path, $value ) if $path;
 
   $value
 }

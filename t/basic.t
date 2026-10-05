@@ -1,8 +1,8 @@
 use Test2::V1
   -pragmas,
-  -target => { CLASS => 'Data::Path' },
+  -target => { CLASS => 'Data::Selectable' },
   qw( dies is isa_ok like ok plan subtest );
-use constant METHOD => CLASS->can( 'get' ) || die; ## no critic ( ProhibitConstantPragma, RequireCarping )
+use constant METHOD => CLASS->can( 'select' ) || die; ## no critic ( ProhibitConstantPragma, RequireCarping )
 
 plan 3;
 

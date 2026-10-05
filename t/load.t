@@ -14,8 +14,8 @@ my $main_module_version;
   local @ARGV = qw( DISTNAME NAME VERSION );
   ok scalar( ( my $distname, $main_module, $main_module_version ) = @{ require './Makefile.PL' } ), ## no critic ( RequireBarewordIncludes )
     "Load 'Makefile.PL' as a module";
-  is $distname, 'Data-Path', 'Check dist name';
-  is $main_module, 'Data::Path', 'Check main module name'
+  is $distname, 'Data-Selectable', 'Check dist name';
+  is $main_module, 'Data::Selectable', 'Check main module name'
 }
 
 ok eval "require $main_module", "Load main module '$main_module'"; ## no critic ( RequireCheckingReturnValueOfEval )

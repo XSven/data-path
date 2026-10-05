@@ -6,7 +6,7 @@ use File::Spec::Functions     qw( catfile );
 use Module::Load::Conditional qw( can_load );
 
 my $git_base_url = 'https://github.com/XSven';
-my $distname     = 'Data-Path';
+my $distname     = 'Data-Selectable';
 
 my @main_module_namespace = split /-/, $distname;
 my $main_module           = join '::', @main_module_namespace;

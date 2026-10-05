@@ -13,6 +13,8 @@ only_in_void_context = 1
 [-Modules::RequireExplicitPackage]
 [-RegularExpressions::RequireExtendedFormatting]
 [-Subroutines::ProtectPrivateSubs]
+[Subroutines::ProhibitBuiltinHomonyms]
+allow = select
 [-Subroutines::ProhibitSubroutinePrototypes]
 [Subroutines::ProhibitUnusedPrivateSubroutines]
 allow_name_regex = _(?:build|trigger)_\w+

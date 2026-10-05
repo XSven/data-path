@@ -2,36 +2,32 @@
 
 =head1 NAME
 
-Data::Path - Perl extension for XPath like accessing from complex data structures
+Data::Selectable - Perl extension for XPath like accessing from complex data structures
 
 =head1 SYNOPSIS
 
-  use Data::Path ();
+  use Data::Selectable ();
 
-  my $hashdata = {
+  my $data = {
     result => {
       msg => [
         { text => 'msg0' },
         { text => 'msg1' },
         { text => 'msg2' }
       ]
-    },
-    method => sub { 'method text' }
+    }
   };
 
-  my $hpath = Data::Path->new( $hashdata );
+  my $self = Data::Selectable->new( $data );
 
-  my $value  = $hpath->get( '/result/msg[1]/text' );
-  my $value2 = $hpath->get( '/method()' );
+  # "msg1"
+  my $value  = $self->select( '/result/msg[1]/text' );
 
-  print "OK" if $value eq 'msg1';
-  print "OK" if $value2 eq 'method text';
-
-  my $hpath = Data::Path->new( $hashdata, $callback );
+  my $self = Data::Selectable->new( $data, $callback );
 
 =head1 DESCRIPTION
 
-XPath like access to get values from a complex data structures.
+XPath like access to select values from a complex data structures.
 
 C<hash_value_is_undefined> / C<array_value_is_undefined> are only called if it was not
 the last part of the path.  If the last part of path is not exists C<undef>
@@ -66,6 +62,10 @@ The default callbacks but you can overwrite them.
 
 =item *
 
+L<Data::Path>
+
+=item *
+
 L<Data::DPath>
 
 =item *
@@ -74,7 +74,7 @@ L<Data::Nested>
 
 =item *
 
-L<Data::PathSimple>
+L<Data::SelectableSimple>
 
 =item *
 
@@ -94,27 +94,15 @@ L<JSONPath|https://www.rfc-editor.org/info/rfc9535/>
 
 =back
 
-=head1 TODO
-
-Slices of data through /foo[*]/bar syntax. eg. retrieve all the bar keys
-from each element of the foo array.
-
 =head1 AUTHOR
 
-Marco Schrieck, <marco.schrieck@gmx.de>
-
-Jeremy Wall, <jeremy@marzhillstudios.com>
-
-Sven Willenbuecher, <sven.willenbuecher@gmx.de>
+Sven Willenbuecher <sven.willenbuecher@gmx.de>
 
 =head1 COPYRIGHT AND LICENSE
 
-Copyright (C) 2006 by Marco Schrieck
-Copyright (C) 2007 by Jeremy Wall
-Copyright (C) 2026 by Sven Willenbücher
+This software is copyright (c) 2026 by Sven Willenbuecher.
 
-This library is free software; you can redistribute it and/or modify
-it under the same terms as Perl itself, either Perl version 5.8.4 or,
-at your option, any later version of Perl 5 you may have available.
+This is free software; you can redistribute it and/or modify it under the
+same terms as the Perl 5 programming language system itself.
 
 =cut
