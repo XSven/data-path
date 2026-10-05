@@ -8,5 +8,4 @@ MY.pm
 README
 t/basic.t
 t/critic.t
-t/JSONPath.t
 t/load.t

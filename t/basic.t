@@ -3,7 +3,7 @@ use Test2::V1
   -target => { CLASS => 'Data::Path' },
   qw( dies is isa_ok isnt like ok plan subtest );
 
-plan 7;
+plan 3;
 
 subtest 'Selectors' => sub {
   plan 15;
@@ -26,7 +26,7 @@ subtest 'Selectors' => sub {
 };
 
 subtest 'Data structure is hash reference' => sub {
-  plan 19;
+  plan 20;
 
   my $data = {
     sv   => 'string',
@@ -53,6 +53,8 @@ subtest 'Data structure is hash reference' => sub {
   };
 
   isa_ok my $self = CLASS->new( $data ), CLASS;
+
+  is $self->get( '' ), $data, 'Empty string "all" selector returns all data';
 
   is $self->get( '/sv' ), $data->{ sv }, 'Key selector returns scalar value';
 
@@ -108,28 +110,22 @@ subtest 'Data structure is hash reference' => sub {
     'use index does not exist callback'
 };
 
-my $data = [ [ qw( a0 a1 ) ], { foo => 7 } ];
+subtest 'Data structure is array reference' => sub {
+  plan 6;
 
-isa_ok my $self = CLASS->new( $data ), CLASS;
+  my $data = [ [ qw( item0 item1 ) ], { key => 'value' } ];
 
-is $self->get( '[0][1]' ), 'a1', 'Select index and select index';
+  isa_ok my $self = CLASS->new( $data ), CLASS;
 
-is $self->get( '[1]/foo' ), '7', 'Select index and select key';
+  is $self->get( '' ), $data, 'Empty string "all" selector returns all data';
 
-like dies { $self->get( '[1][5]' ) }, qr/\ATry to retrieve an array index 5 from a HASH reference/,
-  '"retrieve_index_from_non_array" callback fires';
+  is $self->get( '[0][1]' ), $data->[ 0 ]->[ 1 ], 'Index selector and index selector';
 
-like dies { $self->get( '[0]/foo' ) }, qr/\ATry to retrieve a hash key 'foo' from a ARRAY reference/,
-  '"retrieve_key_from_non_hash" callback fires'
-__END__
-use Test::MockObject ();
-is $self->get( '/method()' ), $data->{ method }->(), 'subroutine returned';
+  is $self->get( '[1]/key' ), $data->[ 1 ]->{ key }, 'Index selector and key selector';
 
-my $obj = Test::MockObject->new( {} );
-$obj->mock( 'method2' => sub { 'method2 val' } );
-isa_ok $self = CLASS->new( $obj ), CLASS;
-is $self->get( '/method2()', $obj ), $obj->method2(), 'method returned';
+  like dies { $self->get( '[1][5]' ) }, qr/\ATry to retrieve an array index 5 from a HASH reference/,
+    '"retrieve_index_from_non_array" callback fires';
 
-my $deep_method = { foo => $obj };
-isa_ok $self = CLASS->new( $deep_method ), CLASS;
-is $self->get( '/foo/method2()' ), $obj->method2(), 'deep method returned';
+  like dies { $self->get( '[0]/key' ) }, qr/\ATry to retrieve a hash key 'key' from a ARRAY reference/,
+    '"retrieve_key_from_non_hash" callback fires'
+};
